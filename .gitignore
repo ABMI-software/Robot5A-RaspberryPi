@@ -1,0 +1,8 @@
+# Colcon build directories
+/colcon/
+.colcon/
+/install/
+.log/
+build/
+install/
+log/

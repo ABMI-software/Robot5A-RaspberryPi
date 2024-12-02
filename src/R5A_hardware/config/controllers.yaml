@@ -1,0 +1,28 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Update rate in Hz
+
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+      joints:
+        - R0_Yaw
+        - R1_Pitch
+        - R2_Pitch
+        - R3_Yaw
+        - R4_Pitch
+      state_publish_rate: 50  # Hz
+      action_monitor_rate: 10  # Hz
+      constraints:
+        goal_time: 0.5
+        stopped_velocity_tolerance: 0.01
+        R0_Yaw: {trajectory: 0.1, goal: 0.05}
+        R1_Pitch: {trajectory: 0.1, goal: 0.05}
+        R2_Pitch: {trajectory: 0.1, goal: 0.05}
+        R3_Yaw: {trajectory: 0.1, goal: 0.05}
+        R4_Pitch: {trajectory: 0.1, goal: 0.05}
+      gains:
+        R0_Yaw: {p: 100.0, i: 0.1, d: 0.01}
+        R1_Pitch: {p: 100.0, i: 0.1, d: 0.01}
+        R2_Pitch: {p: 100.0, i: 0.1, d: 0.01}
+        R3_Yaw: {p: 100.0, i: 0.1, d: 0.01}
+        R4_Pitch: {p: 100.0, i: 0.1, d: 0.01}

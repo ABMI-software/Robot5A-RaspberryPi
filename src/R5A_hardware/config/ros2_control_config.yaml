@@ -1,0 +1,20 @@
+robot_description: "robot_description"
+
+ros2_control:
+  hardware:
+    plugin: "R5A_hardware/SlushHardwareInterface"
+    params:
+      serial_port: "/dev/ttyUSB0"
+      baud_rate: 115200
+
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+      joints:
+        - R0_Yaw
+        - R1_Pitch
+        - R2_Pitch
+        - R3_Yaw
+        - R4_Pitch
