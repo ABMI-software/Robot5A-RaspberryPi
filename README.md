@@ -74,6 +74,8 @@ Install Git for version control:
 sudo apt install -y git
 ```
 
+---
+
 ## Setup Guide
 ### Clone the Repository
 
@@ -83,14 +85,14 @@ cd ~
 git clone https://github.com/Eliottfrhl/Robot5A-RaspberryPi.git
 cd Robot5A-RaspberryPi
 ```
-Install Dependencies
+### Install Dependencies
 
-    Install ROS2 Dependencies
+1. Install ROS2 Dependencies
     Run the following to install ROS2 dependencies:
 ```bash
 sudo apt install -y python3-colcon-common-extensions ros-humble-ros2-control ros-humble-ros2-controllers
 ```
-Install SlushEngine Dependencies
+2. Install SlushEngine Dependencies
 Follow these steps to set up the SlushEngine:
 ```bash
 sudo apt install -y python3-pip i2c-tools
@@ -99,48 +101,48 @@ git clone https://github.com/Roboteurs/slushengine.git
 cd slushengine
 python3 setup.py install
 ```
-Enable I2C and SPI Interfaces
+3. Enable I2C and SPI Interfaces
 Enable I2C and SPI on the Raspberry Pi:
 ```bash
 sudo raspi-config
 ```
     Navigate to Interface Options and enable I2C and SPI.
 
-Configure the Raspberry Pi
+### Configure the Raspberry Pi
 
-    Build the ROS2 Workspace
+1. Build the ROS2 Workspace
     Build the workspace after cloning the repository:
 ```bash
 cd ~/Robot5A-RaspberryPi
 colcon build --packages-select R5A_hardware
 source install/setup.bash
 ```
-Verify ROS2 Installation
+2. Verify ROS2 Installation
 Test that ROS2 is working by running:
 ```bash
 ros2 topic list
 ```
-Connect to the SlushEngine
+### Connect to the SlushEngine
 
-    Connect the SlushEngine to the Raspberry Pi via GPIO.
-    Test the Connection
+1. Connect the SlushEngine to the Raspberry Pi via GPIO.
+2. Test the Connection
     Run the following test script:
 ```bash
 python3 src/R5A_hardware/scripts/slush_test.py
 ```
     This script will initialize the motors and execute basic movement commands.
 
-Network Setup for ROS2 Communication
+### Network Setup for ROS2 Communication
 
-    Assign Static IPs
+1. Assign Static IPs
     Ensure the Raspberry Pi and your Ubuntu computer are on the same network. Assign static IPs if necessary.
 
-    Enable ROS2 Multicast
+2. Enable ROS2 Multicast
     Configure ROS2 to use multicast for discovery:
 ```bash
 export ROS_DOMAIN_ID=1
 ```
-Test ROS2 Talker-Listener
+3. Test ROS2 Talker-Listener
 On the Raspberry Pi, run:
 ```bash
 ros2 run demo_nodes_py talker
@@ -149,10 +151,13 @@ On your Ubuntu machine, run:
 ```bash
 ros2 run demo_nodes_py listener
 ```
-Directory Structure
 
-Robot5A-RaspberryPi/
+---
+
+## Directory Structure
+
 ```bash
+Robot5A-RaspberryPi/
 ├── config/
 │   ├── controllers.yaml           # Controller configuration
 │   ├── robot_description.urdf     # Robot description
@@ -161,48 +166,53 @@ Robot5A-RaspberryPi/
 │   ├── controller_manager.launch.py
 │   ├── hardware_interface.launch.py
 │   └── robot_state_publisher.launch.py
-├── src/
-│   ├── R5A_hardware/
+├──  R5A_hardware/
 │   │   ├── __init__.py
-│   │   └── slush_engine_hardware.py
+├── src/
+│   ├── slush_engine_hardware.py
 ├── scripts/
 │   └── slush_test.py               # Test script for SlushEngine
 ├── README.md                       # This README file
 ├── setup.py                        # Package setup file
 └── package.xml                     # ROS2 package metadata
 ```
-Usage
-Launch Files
 
-    Start Hardware Interface:
+---
+
+## Usage
+### Launch Files
+
+- Start Hardware Interface:
 ```bash
 ros2 launch R5A_hardware hardware_interface.launch.py
 ```
-Start Controller Manager:
+- Start Controller Manager:
 ```bash
 ros2 launch R5A_hardware controller_manager.launch.py
 ```
-Publish Robot State:
+- Publish Robot State:
 ```bash
 ros2 launch R5A_hardware robot_state_publisher.launch.py
 ```
-Testing the Hardware Interface
+### Testing the Hardware Interface
 
 Run the SlushEngine test script to verify motor control:
 ```bash
 python3 src/R5A_hardware/scripts/slush_test.py
 ```
-Contributing
+
+---
+
+## Contributing
 
 Contributions are welcome! Please follow these steps:
 
-    Fork the repository.
-    Create a feature branch.
-    Submit a pull request.
+1. Fork the repository.
+2. Create a feature branch.
+3. Submit a pull request.
 
-License
+---
+
+## License
 
 This project is licensed under the MIT License.
-
-
-You can copy and paste this markdown file directly into your repository's `README.md`. Let me know if you want any additional sections or modifications!
