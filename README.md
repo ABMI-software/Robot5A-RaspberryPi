@@ -82,7 +82,7 @@ sudo apt install -y git
 Start by cloning this repository onto your Raspberry Pi:
 ```bash
 cd ~
-git clone https://github.com/Eliottfrhl/Robot5A-RaspberryPi.git
+git clone https://github.com/ABMI-software/Robot5A-RaspberryPi.git
 cd Robot5A-RaspberryPi
 ```
 ### Install Dependencies
