@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>R5A_hardware</name>
+  <name>r5a_hardware</name>
   <version>0.1.0</version>
   <description>Hardware interface for R5A robotic arm.</description>
 

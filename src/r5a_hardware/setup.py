@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'R5A_hardware'
+package_name = 'r5a_hardware'
 
 setup(
     name=package_name,
@@ -26,7 +26,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'slush_hardware_interface = R5A_hardware.slush_engine_hardware:main',
+            'slush_hardware_interface = r5a_hardware.slush_engine_hardware:main',
         ],
     },
 )
