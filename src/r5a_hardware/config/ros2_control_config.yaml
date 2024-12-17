@@ -2,7 +2,7 @@ robot_description: "robot_description"
 
 ros2_control:
   hardware:
-    plugin: "R5A_hardware/SlushHardwareInterface"
+    plugin: "r5a_hardware/SlushHardwareInterface"
     params:
       serial_port: "/dev/ttyUSB0"
       baud_rate: 115200

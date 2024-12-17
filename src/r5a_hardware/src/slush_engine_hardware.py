@@ -46,7 +46,7 @@ class SlushEngineHardware(SystemInterface):
             # Configure motors
             for joint_name, motor in self.joints.items():
                 motor.setMicroSteps(16)
-                motor.setCurrent(1000, 1000)
+                motor.setCurrent(50, 50,50,50) #
                 self.get_logger().info(f"{joint_name} motor configured.")
 
             # Initialize ROS 2 subscriber
