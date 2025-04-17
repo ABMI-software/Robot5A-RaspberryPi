@@ -1,218 +1,187 @@
-# Robot5A Raspberry Pi - ROS2 Control and Hardware Integration
+# Robot5A-TB
 
-This repository contains the code and configuration necessary for the Raspberry Pi to act as the hardware control interface for the Robot5A robotic arm. The Raspberry Pi handles the **ROS2 Control** framework and integrates with the **SlushEngine** to drive the stepper motors of the arm. This setup is designed to work with **ROS2 Humble** on Ubuntu 22.04.
-
----
-
-## Table of Contents
-
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Hardware Requirements](#hardware-requirements)
-- [Software Prerequisites](#software-prerequisites)
-- [Setup Guide](#setup-guide)
-  - [Clone the Repository](#clone-the-repository)
-  - [Install Dependencies](#install-dependencies)
-  - [Configure the Raspberry Pi](#configure-the-raspberry-pi)
-  - [Connect to the SlushEngine](#connect-to-the-slushengine)
-  - [Test the Setup](#test-the-setup)
-- [Directory Structure](#directory-structure)
-- [Usage](#usage)
-  - [Launch Files](#launch-files)
-  - [Testing the Hardware Interface](#testing-the-hardware-interface)
-- [Contributing](#contributing)
-- [License](#license)
+Robot5A-TB is a ROS2 workspace designed for controlling and visually servoing a low-cost robotic arm, the Moveo, in both simulation and real-world environments. It leverages camera-based feedback with ArUco markers for joint state estimation, eliminating the need for traditional encoders. The workspace includes packages for robot description, visual processing, hardware interfacing, and control.
 
 ---
 
-## Project Overview
+## Workspace Structure
 
-This repository is part of the Robot5A project and focuses on the **Raspberry Pi hardware interface**. The Raspberry Pi communicates with the **SlushEngine**, which controls the stepper motors, and runs the ROS2 Control stack to receive and execute commands from the central controller on a remote Ubuntu machine.
+### `src/robot_description_tb`
+This package defines the robot's physical description (URDF), 3D meshes, and simulation setup.
 
-### Key Components
-- **SlushEngine**: Hardware driver board for stepper motors.
-- **ROS2 Control**: Framework to manage hardware abstraction and control commands.
-- **Visual Servoing**: The Raspberry Pi relies on visual joint state feedback from a remote system.
+#### **Contents:**
+- **URDF Definition:**
+  - `r5a_v_ros.urdf.xacro`: Defines the Moveo arm's joints and links.
+- **3D Meshes:**
+  - STL files (e.g., `base_link.STL`, `R5A_link1.STL`) for visualization and simulation.
+- **Launch Files:**
+  - `gazebo.launch.py`: Launches the robot in Gazebo simulation.
+  - `gazebo_move.launch.py`: Adds movement capabilities in simulation.
 
----
-
-## Features
-
-- **Integration with SlushEngine** for precise stepper motor control.
-- **ROS2 hardware interface** to bridge ROS2 controllers and the SlushEngine.
-- **Modular configuration** with YAML files for controllers and URDF descriptions.
-- Support for **networked ROS2 communication** between the Raspberry Pi and a central controller.
-
----
-
-## Hardware Requirements
-
-- **Raspberry Pi 4B** with Ubuntu 22.04 (64-bit).
-- **SlushEngine Model D** for stepper motor control.
-- **Stepper Motors** (compatible with the SlushEngine).
-- Ethernet or Wi-Fi connectivity for ROS2 communication.
-
----
-
-## Software Prerequisites
-
-Before setting up this project, ensure the following are installed on your Raspberry Pi:
-
-1. **ROS2 Humble**  
-   Follow the [ROS2 Humble installation guide](https://docs.ros.org/en/humble/Installation.html) for Ubuntu 22.04.
-
-2. **Python 3**  
-   Install Python and its dependencies:
+#### **Usage:**
 ```bash
-sudo apt update
-sudo apt install -y python3 python3-pip
-```
-
-3. **Git**
-Install Git for version control:
-```bash
-sudo apt install -y git
+ros2 launch robot_description_tb gazebo.launch.py
 ```
 
 ---
 
-## Setup Guide
-### Clone the Repository
+### `src/robot_visual`
+This package handles camera calibration, ArUco marker detection, and visual joint state estimation.
 
-Start by cloning this repository onto your Raspberry Pi:
-```bash
-cd ~
-git clone https://github.com/ABMI-software/Robot5A-RaspberryPi.git
-cd Robot5A-RaspberryPi
-```
-### Install Dependencies
+#### **Contents:**
+- **Configuration Files:**
+  - `camera_1_calibration.yaml`, `camera_2_calibration.yaml`: Intrinsic camera parameters.
+  - `camera_transform.yaml`: Camera poses relative to the world frame.
+  - `camera_1_images/`, `camera_1_images_charuco/`: Calibration image storage for intrinsic parameters.
+  - `extrinsic_images/`, `extrinsic_images_charuco/`: Calibration image storage for extrinsic parameters.
+- **Scripts:**
+  - `calibration_charuco_recording.py`: Records CharUco board images for calibration.
+    ```bash
+    python3 scripts/calibration_charuco_recording.py
+    ```
+  - `calibration_charuco_script.py`: Generates calibration YAML files from images.
+    ```bash
+    python3 scripts/calibration_charuco_script.py
+    ```
+  - `calibration_charuco_set_axis_recording.py`: Records CharUco board images for extrinsic calibration.
+    ```bash
+    python3 scripts/calibration_charuco_set_axis_recording.py
+    ```
+  - `calibration_charuco_set_axis.py`: Generates extrinsic matrix world to cam from images.
+    ```bash
+    python3 scripts/calibration_charuco_set_axis.py
+    ```
+- **Nodes:**
+  - `aruco_detector_single.cpp`: Detects single ArUco markers from one camera.
+  - `aruco_detector_double.cpp`: Processes dual-camera ArUco detection.
+  - `camera_test_node.cpp`: Tests camera functionality.
 
-1. Install ROS2 Dependencies
-    Run the following to install ROS2 dependencies:
-```bash
-sudo apt install -y python3-colcon-common-extensions ros-humble-ros2-control ros-humble-ros2-controllers
-```
-2. Install SlushEngine Dependencies
-Follow these steps to set up the SlushEngine:
-```bash
-sudo apt install -y python3-pip i2c-tools
-pip3 install spidev
-git clone https://github.com/Roboteurs/slushengine.git
-cd slushengine
-python3 setup.py install
-```
-3. Enable I2C and SPI Interfaces
-Enable I2C and SPI on the Raspberry Pi:
-```bash
-sudo raspi-config
-```
-    Navigate to Interface Options and enable I2C and SPI.
+#### **Usage:**
+First, you take images with calibration_charuco_recording (10 of the board in all border os the image and 10 of the board from differents positions or heights). 
+Then, you start calibration_charuco_script, it's automatic.
+Then, you take 1 images or identical images with calibration_charuco_set_axis_recording, you need to have set the placement of your origin in the code (described from the origin of your board). 
+Finally, you start calibration_charuco_set_axis, it's automatic. Copy the World to cam matrix in camera_transform.yaml.
 
-### Configure the Raspberry Pi
+The calibration is finished, it's better to redo somme pictures if you move the camera.
 
-1. Build the ROS2 Workspace
-    Build the workspace after cloning the repository:
+---
+
+### `src/robot_control_tb`
+This package provides control logic and MoveIt integration for the robot.
+
+#### **Contents:**
+- **Nodes:**
+  - `visual_joint_state_publisher.cpp`: Publishes joint states from visual data.
+  - `joint_state_bridge.cpp`: gets visual data and combine it with controller data to make a working /join_states.
+  - `moveit_control_gui.cpp`: Basic MoveIt control interface.  
+- **Config:**
+  - `aruco_to_link.yaml`: Maps ArUco markers to robot links.
+- **Launch:**
+  - `visual_control.launch.py`: Launches control nodes.
+
+---
+
+### `src/robot_hardware_interface`
+This package interfaces ROS2 control with the physical robot hardware.
+
+#### **Contents:**
+- `SlushEngineHardware.cpp`: Hardware interface for the Slush Engine, reading from `/joint_states` and writing to `/slush_commands`.
+
+---
+
+### `src/slush_engine_communication`
+This package drives the robot’s motors based on commands.
+
+#### **Contents:**
+- `slush_node.py`: Subscribes to `/slush_commands` and controls Slush Engine motors.
+
+#### **Usage:**
 ```bash
-cd ~/Robot5A-RaspberryPi
-colcon build --packages-select R5A_hardware
+ros2 run slush_engine_communication slush_node
+```
+
+---
+
+### `src/robot_moveit_config_tb`
+This package configures MoveIt for motion planning.
+
+#### **Contents:**
+- **Launch:**
+  - `demo.launch.py`: Runs a full MoveIt demo with RViz.
+- **Config:**
+  - `armr5.urdf.xacro`: MoveIt-specific URDF.
+  - `moveit_controllers.yaml`: Controller configuration.
+
+#### **Usage:**
+```bash
+ros2 launch robot_moveit_config_tb demo.launch.py
+```
+
+---
+
+## **Project Overview**
+
+### **Goal**
+- Control the Moveo arm in simulation and real-world setups using ROS2.
+- Enable encoder-less operation with camera-based visual servoing via ArUco markers.
+- Provide a modular framework for robotic control and simulation.
+
+### **Features**
+- **Visual Servoing**: Uses ArUco markers for joint state estimation.
+- **Hardware Integration**: Interfaces with Slush Engine motors for real-world control.
+- **Simulation Support**: Gazebo integration for testing and development.
+- **MoveIt Compatibility**: Motion planning and control with MoveIt.
+
+---
+
+## **Requirements**
+
+### **Dependencies**
+- ROS2 Humble
+- OpenCV (with ArUco support)
+- Eigen3
+- YAML-CPP
+- tf2_ros
+- Gazebo ROS2
+- MoveIt2
+
+### **Installation**
+```bash
+git clone https://github.com/ABMI-software/Robot5A-TB.git
+cd Robot5A-TB
+sudo apt install ros-humble-moveit ros-humble-gazebo-ros ros-humble-tf2-ros libeigen3-dev libyaml-cpp-dev
+colcon build
 source install/setup.bash
 ```
-2. Verify ROS2 Installation
-Test that ROS2 is working by running:
-```bash
-ros2 topic list
-```
-### Connect to the SlushEngine
-
-1. Connect the SlushEngine to the Raspberry Pi via GPIO.
-2. Test the Connection
-    Run the following test script:
-```bash
-python3 src/R5A_hardware/scripts/slush_test.py
-```
-    This script will initialize the motors and execute basic movement commands.
-
-### Network Setup for ROS2 Communication
-
-1. Assign Static IPs
-    Ensure the Raspberry Pi and your Ubuntu computer are on the same network. Assign static IPs if necessary.
-
-2. Enable ROS2 Multicast
-    Configure ROS2 to use multicast for discovery:
-```bash
-export ROS_DOMAIN_ID=1
-```
-3. Test ROS2 Talker-Listener
-On the Raspberry Pi, run:
-```bash
-ros2 run demo_nodes_py talker
-```
-On your Ubuntu machine, run:
-```bash
-ros2 run demo_nodes_py listener
-```
 
 ---
 
-## Directory Structure
+## **Usage Examples**
 
+### **Start the Full Visual Control Stack:**
 ```bash
-Robot5A-RaspberryPi/
-├── config/
-│   ├── controllers.yaml           # Controller configuration
-│   ├── robot_description.urdf     # Robot description
-│   └── ros2_control_config.yaml   # Hardware interface configuration
-├── launch/
-│   ├── controller_manager.launch.py
-│   ├── hardware_interface.launch.py
-│   └── robot_state_publisher.launch.py
-├──  R5A_hardware/
-│   │   ├── __init__.py
-├── src/
-│   ├── slush_engine_hardware.py
-├── scripts/
-│   └── slush_test.py               # Test script for SlushEngine
-├── README.md                       # This README file
-├── setup.py                        # Package setup file
-└── package.xml                     # ROS2 package metadata
+ros2 launch robot_control_tb visual_control.launch.py
 ```
+
+This command will start all necessary nodes, including:
+- **Robot State Publisher**
+- **Slush Engine Node**
+- **Aruco Marker Detection** (single or dual camera support)
+- **Visual Joint State Publisher**
+- **Joint State Bridge**
+- **Controller Manager**
+- **MoveIt Motion Planning**
+- **GUI for MoveIt Control**
+
+By running this launch file, all required components for visual servoing and hardware control will be initialized automatically.
+
 
 ---
 
-## Usage
-### Launch Files
-
-- Start Hardware Interface:
-```bash
-ros2 launch R5A_hardware hardware_interface.launch.py
-```
-- Start Controller Manager:
-```bash
-ros2 launch R5A_hardware controller_manager.launch.py
-```
-- Publish Robot State:
-```bash
-ros2 launch R5A_hardware robot_state_publisher.launch.py
-```
-### Testing the Hardware Interface
-
-Run the SlushEngine test script to verify motor control:
-```bash
-python3 src/R5A_hardware/scripts/slush_test.py
-```
+## **Contributions**
+Contributions are welcome! Please open issues or submit pull requests on GitHub.
 
 ---
 
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository.
-2. Create a feature branch.
-3. Submit a pull request.
-
----
-
-## License
-
+## **License**
 This project is licensed under the MIT License.
